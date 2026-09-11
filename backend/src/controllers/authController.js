@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+// Controlador de autenticación del sistema.
 // Login
 const login = async (req, res) => {
     try {
