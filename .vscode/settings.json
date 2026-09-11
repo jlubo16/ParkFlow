@@ -1,0 +1,19 @@
+{
+  "terminal.integrated.profiles.windows": {
+    "SmartPark Backend": {
+      "path": "cmd.exe",
+      "args": [
+        "/k",
+        "cd \"C:\\Users\\Personal\\Documents\\park-propio\\backend\" && npm run dev"
+      ]
+    },
+    "SmartPark Frontend": {
+      "path": "cmd.exe",
+      "args": [
+        "/k",
+        "cd \"C:\\Users\\Personal\\Documents\\park-propio\\mobile-app\" && npx expo start -c"
+      ]
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "SmartPark Backend"
+}
