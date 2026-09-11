@@ -1,0 +1,58 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "SmartPark: Backend",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "dev"
+      ],
+      "options": {
+        "cwd": "C:\\Users\\Personal\\Documents\\park-propio\\backend"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "group": "backend",
+        "reveal": "always",
+        "focus": true
+      }
+    },
+    {
+      "label": "SmartPark: Frontend",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "expo",
+        "start",
+        "-c"
+      ],
+      "options": {
+        "cwd": "C:\\Users\\Personal\\Documents\\park-propio\\mobile-app"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "group": "frontend",
+        "reveal": "always",
+        "focus": false
+      }
+    },
+    {
+      "label": "SmartPark: Iniciar Todo",
+      "dependsOn": [
+        "SmartPark: Backend",
+        "SmartPark: Frontend"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    }
+  ]
+}
