@@ -1,71 +1,110 @@
 # 🅿️ SmartPark
 
-Sistema de gestión de parqueaderos: backend Node.js + MySQL y app móvil en React Native (Expo).
+Sistema de gestión de parqueaderos: backend en Node.js + MySQL y app móvil en React Native (Expo).
+
+Permite registrar la entrada y salida de vehículos, calcular automáticamente el monto a pagar según tarifas configurables, gestionar empleados, consultar historial y generar reportes de ingresos.
+
+## ✨ Funcionalidades
+
+- **Autenticación** con JWT (login por correo y contraseña, roles admin/empleado)
+- **Registro de entrada y salida** de vehículos, con cálculo automático de tiempo estacionado y tarifa
+- **Gestión de empleados** (crear, actualizar, desactivar) — solo administrador
+- **Configuración de tarifas** por tipo de vehículo, con historial de cambios
+- **Reportes de ingresos** por rango de fechas (total, promedio diario, desglose por tipo de vehículo, mejor día)
+- **Historial** general y por placa de vehículo
 
 ## 🛠️ Tecnologías
+
 - **Backend:** Node.js, Express, MySQL2, JWT, bcrypt
 - **Mobile:** React Native, Expo, Axios
-- **BD:** MySQL (XAMPP, puerto 3307)
+- **BD:** MySQL (vía XAMPP, puerto 3307)
+- **Testing:** Jest
 
 ## ⚙️ Requisitos
+
 - Node.js v18+
-- XAMPP con MySQL en puerto **3307**
-- Expo Go (para el celular)
+- XAMPP con MySQL corriendo en el puerto **3307**
+- Expo Go instalado en el celular (para probar la app móvil)
 
 ## 🚀 Instalación
 
 ```bash
-# 1. Instalar dependencias
+# Opción 1: script automático
 node start.js
-# o manual:
+
+# Opción 2: manual
 cd backend && npm install
 cd ../mobile-app && npm install
-bash
-# 2. Importar base de datos (desde phpMyAdmin o consola)
-mysql -u root -P 3307 < database/schema.sql
-bash
-# 3. Crear backend/.env
+```
+
+## 🔧 Configuración
+
+### Backend
+
+Crea un archivo `.env` dentro de `backend/` con:
+
+```env
+DB_HOST=localhost
+JWT_SECRET=tu_clave_secreta_aqui
 PORT=3000
-JWT_SECRET=tu_clave_secreta
-js
-// 4. Ajustar IP en mobile-app/src/services/api.js
+```
+
+Asegúrate de tener la base de datos `smartpark` creada en MySQL/XAMPP importando `database/schema.sql`.
+
+### App móvil
+
+En `mobile-app/src/services/api.js`, cambia la IP por la de tu propia red local (la de tu computador donde corre el backend):
+
+```js
 const API_URL = 'http://TU_IP_LOCAL:3000/api';
-▶️ Ejecutar
-bash
-# Terminal 1 - Backend
-cd backend && node server.js
+```
 
-# Terminal 2 - App
-cd mobile-app && npx expo start -c
-🔑 Credenciales de Prueba
-Rol	Correo	Contraseña
-Admin	admin@smartpark.com	admin123
-Empleado	empleado@smartpark.com	empleado123
-📱 Funcionalidades
-Login con JWT
+> El celular y el computador deben estar en la misma red Wi-Fi para que la app pueda conectarse al backend.
 
-Dashboard con mapa de espacios
+## ▶️ Ejecución
 
-Registrar entrada / salida (cálculo automático de tarifa)
+```bash
+# Backend
+cd backend
+npm start          # o: npx nodemon server.js
 
-Historial con filtros
+# App móvil (en otra terminal)
+cd mobile-app
+npx expo start
+```
 
-Reportes de ingresos (admin)
+El backend queda disponible en `http://localhost:3000`, con un endpoint de salud en `/api/health`.
 
-Configurar tarifas (admin)
+## 🧪 Pruebas
 
-Gestionar empleados (admin)
+El backend cuenta con pruebas unitarias hechas con Jest (mockeando la capa de base de datos):
 
-🧮 Tarifas
-🚗 Carro: $5.000/hora
+```bash
+cd backend
+npm test
+```
 
-🛵 Moto: $3.000/hora
+## 📁 Estructura del proyecto
 
-🐛 Problemas Comunes
-Error MySQL: verifica XAMPP en puerto 3307
+```
+├── backend
+│   └── src
+│       ├── config        # Conexión a MySQL
+│       ├── controllers   # Lógica de negocio
+│       ├── middleware    # Autenticación y validaciones
+│       └── routes        # Endpoints de la API
+├── database
+│   └── schema.sql        # Esquema de la base de datos
+└── mobile-app
+    └── src
+        ├── contexts      # Contexto de autenticación
+        ├── screens       # Pantallas de la app
+        └── services      # Cliente HTTP (Axios)
+```
 
-App no conecta: revisa la IP en api.js
+## 👤 Roles
 
-Token inválido: vuelve a iniciar sesión (expira en 8h)
-
-📄 Licencia
+| Rol | Permisos |
+|---|---|
+| **Admin** | Todo lo anterior + gestionar empleados, tarifas y reportes |
+| **Empleado** | Registrar entrada/salida de vehículos, consultar historial |
