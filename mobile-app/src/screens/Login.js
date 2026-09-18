@@ -29,9 +29,11 @@ export default function Login({ navigation }) {
         setLoading(false);
 
         if (result.success) {
-        } else {
-            Alert.alert('Error', result.error);
+            navigation.replace('Dashboard');
+            return;
         }
+
+        Alert.alert('Error', result.error);
     };
 
     return (
