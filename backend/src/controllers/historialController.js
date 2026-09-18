@@ -4,7 +4,6 @@ const db = require('../config/db');
 const getHistorial = async (req, res) => {
     try {
         const { fecha_inicio, fecha_fin, id_usuario } = req.query;
-
         let query = `
             SELECT 
                 v.id_registro,
@@ -75,7 +74,6 @@ const getHistorialVehiculo = async (req, res) => {
              LIMIT 50`,
             [placa]
         );
-
         res.json(rows);
     } catch (error) {
         console.error('Error al obtener historial del vehículo:', error);
