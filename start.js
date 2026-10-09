@@ -229,7 +229,7 @@ async function main() {
     console.log(`   npm: ${await checkCommand('npm')}`);
     console.log(`   Backend: ${fs.existsSync('./backend/node_modules') ? 'Instalado  ' : 'Pendiente  '}`);
     console.log(`   Frontend: ${fs.existsSync('./mobile-app/node_modules') ? 'Instalado  ' : 'Pendiente  '}`);
-    console.log(`   MySQL: Usando XAMPP (configurado en db.js)`);
+    console.log(`   PostgreSQL: Configurado mediante variables de entorno`);
 
     console.log('\n Comandos para iniciar:');
     console.log(colorize('   Terminal 1 (Backend):', 'yellow'));

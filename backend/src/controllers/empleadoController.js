@@ -1,5 +1,5 @@
 const db = require('../config/db');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 // Obtener todos los empleados
 const getEmpleados = async (req, res) => {

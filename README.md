@@ -1,6 +1,6 @@
 # 🅿️ SmartPark
 
-Sistema de gestión de parqueaderos: backend en Node.js + MySQL y app móvil en React Native (Expo).
+Sistema de gestión de parqueaderos: backend en Node.js + PostgreSQL y app móvil en React Native (Expo).
 
 Permite registrar la entrada y salida de vehículos, calcular automáticamente el monto a pagar según tarifas configurables, gestionar empleados, consultar historial y generar reportes de ingresos.
 
@@ -15,51 +15,63 @@ Permite registrar la entrada y salida de vehículos, calcular automáticamente e
 
 ## 🛠️ Tecnologías
 
-- **Backend:** Node.js, Express, MySQL2, JWT, bcrypt
+- **Backend:** Node.js, Express, PostgreSQL (`pg`), JWT, bcrypt
 - **Mobile:** React Native, Expo, Axios
-- **BD:** MySQL (vía XAMPP, puerto 3307)
+- **BD:** PostgreSQL
 - **Testing:** Jest
 
 ## ⚙️ Requisitos
 
-- Node.js v18+
-- XAMPP con MySQL corriendo en el puerto **3307**
+- Node.js v18+ (para ejecutar el proyecto sin Docker)
+- Docker Engine y Docker Compose (para desplegar el backend y PostgreSQL con contenedores)
 - Expo Go instalado en el celular (para probar la app móvil)
 
-## 🚀 Instalación
+## 🚀 Despliegue con Docker
+
+Desde la raíz del repositorio, crea el archivo de variables y reemplaza los valores de ejemplo:
 
 ```bash
-# Opción 1: script automático
-node start.js
-
-# Opción 2: manual
-cd backend && npm install
-cd ../mobile-app && npm install
+cp .env.example .env
 ```
 
-## 🔧 Configuración
+Usa una contraseña segura para `DB_PASSWORD` y una clave aleatoria larga para `JWT_SECRET`. `APP_PORT` es el puerto público asignado en el servidor.
 
-### Backend
+Luego construye e inicia la API y PostgreSQL:
 
-Crea un archivo `.env` dentro de `backend/` con:
-
-```env
-DB_HOST=localhost
-JWT_SECRET=tu_clave_secreta_aqui
-PORT=3000
+```bash
+docker compose --env-file .env up -d --build
 ```
 
-Asegúrate de tener la base de datos `smartpark` creada en MySQL/XAMPP importando `database/schema.sql`.
+La primera vez, PostgreSQL crea las tablas y los datos iniciales desde `database/schema.sql`. Los datos persisten en el volumen `postgres_data`. Para revisar el estado y los registros:
 
-### App móvil
-
-En `mobile-app/src/services/api.js`, cambia la IP por la de tu propia red local (la de tu computador donde corre el backend):
-
-```js
-const API_URL = 'http://TU_IP_LOCAL:3000/api';
+```bash
+docker compose ps
+docker compose logs -f backend
 ```
 
-> El celular y el computador deben estar en la misma red Wi-Fi para que la app pueda conectarse al backend.
+La API estará disponible en `http://SERVIDOR:APP_PORT/api`. No se publica el puerto de PostgreSQL al exterior. Conserva el `.env` solo en el servidor; nunca lo subas al repositorio.
+
+## 📱 App móvil
+
+La app Expo se ejecuta o compila aparte; no es un servicio web para incluir en Docker Compose. Copia `mobile-app/.env.example` a `mobile-app/.env` y configura `EXPO_PUBLIC_API_URL` con una dirección que el teléfono pueda alcanzar, por ejemplo `http://IP_O_DOMINIO_DEL_SERVIDOR:3000/api`. La URL se incorpora al iniciar/compilar la app, así que reinicia Expo o vuelve a generar la compilación después de cambiarla.
+
+Para desarrollo, instala sus dependencias y arranca Expo:
+
+```bash
+cd mobile-app
+npm ci
+npx expo start
+```
+
+## 🧰 Ejecución local del backend sin Docker
+
+Configura una instancia PostgreSQL y las variables `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` y `JWT_SECRET` en `backend/.env`. Crea la base de datos e importa `database/schema.sql`. Después:
+
+```bash
+cd backend
+npm ci
+npm start
+```
 
 ## ▶️ Ejecución
 
@@ -89,7 +101,7 @@ npm test
 ```
 ├── backend
 │   └── src
-│       ├── config        # Conexión a MySQL
+│       ├── config        # Conexión a PostgreSQL
 │       ├── controllers   # Lógica de negocio
 │       ├── middleware    # Autenticación y validaciones
 │       └── routes        # Endpoints de la API
