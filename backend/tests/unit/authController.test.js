@@ -22,6 +22,7 @@ test('CP01 - login exitoso devuelve un token', async () => {
       nombre_completo: 'Administrador',
     }],
   });
+
   bcrypt.compare.mockResolvedValueOnce(true);
   jwt.sign.mockReturnValueOnce('token-simulado');
 
