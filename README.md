@@ -156,7 +156,7 @@ npm test
 
 El workflow `.github/workflows/ci.yml` instala las dependencias y ejecuta las pruebas del backend automáticamente en cada push a las ramas `dev` y `main`, así como en los pull requests dirigidos a estas ramas.
 
-La integración continua permite verificar que las pruebas del backend se ejecuten correctamente ante los cambios del repositorio. El despliegue al VPS se realiza mediante una configuración independiente.
+En los pull requests hacia `dev` o `main`, GitHub Actions ejecuta las pruebas del backend; esos eventos no despliegan al VPS. Cuando un cambio se fusiona en `dev`, las pruebas se ejecutan primero y, si pasan, Actions actualiza y reconstruye el backend en el VPS. Los cambios en `main` ejecutan las pruebas, pero no despliegan. La aplicación móvil no forma parte de este despliegue.
 
 Las credenciales y demás variables de entorno se gestionan fuera del repositorio para evitar la exposición de información sensible.
 
@@ -166,25 +166,25 @@ Las credenciales y demás variables de entorno se gestionan fuera del repositori
 SmartPark/
 ├── backend/
 │   ├── src/
-│   │   ├── config/         # Configuración y conexión a PostgreSQL
-│   │   ├── controllers/    # Lógica de negocio
-│   │   ├── middleware/     # Autenticación y validaciones
-│   │   └── routes/         # Rutas y endpoints de la API
+│   │   ├── config/          # Configuración y conexión a PostgreSQL
+│   │   ├── controllers/     # Lógica de negocio
+│   │   ├── middleware/      # Autenticación y validaciones
+│   │   └── routes/          # Rutas y endpoints de la API
 │   ├── tests/
-│   │   ├── helpers/        # Utilidades para las pruebas
-│   │   └── unit/           # Pruebas unitarias
+│   │   ├── helpers/         # Utilidades para las pruebas
+│   │   └── unit/            # Pruebas unitarias
 │   └── package.json
 ├── database/
-│   └── schema.sql          # Esquema de la base de datos
+│   └── schema.sql           # Esquema de la base de datos
 ├── mobile-app/
 │   ├── src/
-│   │   ├── contexts/       # Contextos de la aplicación
-│   │   ├── screens/        # Pantallas
-│   │   └── services/       # Cliente HTTP y comunicación con la API
+│   │   ├── contexts/        # Contextos de la aplicación
+│   │   ├── screens/         # Pantallas
+│   │   └── services/        # Cliente HTTP y comunicación con la API
 │   └── package.json
 ├── .github/
 │   └── workflows/
-│       └── ci.yml          # Integración continua
+│       └── ci.yml           # Integración continua y despliegue del backend
 ├── .env.example
 ├── docker-compose.yml
 └── README.md
