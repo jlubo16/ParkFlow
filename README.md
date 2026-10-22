@@ -68,4 +68,10 @@ App no conecta: revisa la IP en api.js
 
 Token inválido: vuelve a iniciar sesión (expira en 8h)
 
+## Integración continua
+
+El workflow `.github/workflows/ci.yml` instala las dependencias y ejecuta las pruebas del backend en cada `push` y pull request dirigido a `dev` o `main`.
+
+El despliegue automático y sus secrets quedan pendientes de definir: las ramas actuales usan MySQL y no incluyen `docker-compose.yml`, mientras que la copia local de `refactor/design-patterns` usa PostgreSQL y Docker. No se debe activar un despliegue hasta elegir una versión y configurar sus variables y puertos por entorno.
+
 📄 Licencia
