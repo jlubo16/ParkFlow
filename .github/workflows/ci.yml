@@ -35,3 +35,25 @@ jobs:
       - name: Run backend tests
         working-directory: backend
         run: npm test -- --runInBand
+
+  deploy:
+    name: Deploy development to VPS
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy backend over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST_DEV }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_DEV }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE_DEV }}
+          script: |
+            set -e
+            cd /root/projects/electivaVDiurno/equipo-6/parkflow-deploy
+            git fetch origin dev
+            git checkout dev
+            git pull --ff-only origin dev
+            docker compose -p parkflow --env-file /root/projects/electivaVDiurno/equipo-6/parkflow/.env -f /root/projects/electivaVDiurno/equipo-6/parkflow-deploy/docker-compose.yml up -d --build --no-deps backend
