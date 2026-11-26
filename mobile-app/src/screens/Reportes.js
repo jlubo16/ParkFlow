@@ -5,17 +5,17 @@ import {
     StyleSheet,
     ScrollView,
     TextInput,
-    TouchableOpacity,
     Alert,
-    ActivityIndicator,
 } from 'react-native';
 import api from '../services/api';
+import AppButton from '../components/AppButton';
+import useAsyncAction from '../hooks/useAsyncAction';
 
 export default function Reportes() {
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
     const [reporte, setReporte] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const { loading, run } = useAsyncAction();
 
     const generarReporte = async () => {
         if (!fechaInicio || !fechaFin) {
@@ -23,16 +23,15 @@ export default function Reportes() {
             return;
         }
 
-        setLoading(true);
         try {
-            const response = await api.get(
-                `/reportes/ingresos?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
-            );
-            setReporte(response.data);
+            await run(async () => {
+                const response = await api.get(
+                    `/reportes/ingresos?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
+                );
+                setReporte(response.data);
+            });
         } catch (error) {
             Alert.alert('Error', 'No se pudo generar el reporte.');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -54,13 +53,13 @@ export default function Reportes() {
                     value={fechaFin}
                     onChangeText={setFechaFin}
                 />
-                <TouchableOpacity style={styles.button} onPress={generarReporte}>
-                    {loading ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>📊 Generar Reporte</Text>
-                    )}
-                </TouchableOpacity>
+                <AppButton
+                    title="📊 Generar Reporte"
+                    style={styles.button}
+                    textStyle={styles.buttonText}
+                    onPress={generarReporte}
+                    loading={loading}
+                />
             </View>
 
             {reporte && (

@@ -11,6 +11,7 @@ import {
     Modal,
 } from 'react-native';
 import api from '../services/api';
+import FloatingActionButton from '../components/FloatingActionButton';
 
 export default function GestionarEmpleados() {
     const [empleados, setEmpleados] = useState([]);
@@ -147,13 +148,6 @@ export default function GestionarEmpleados() {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => abrirModal()}
-            >
-                <Text style={styles.addButtonText}>➕ Agregar Empleado</Text>
-            </TouchableOpacity>
-
             <FlatList
                 data={empleados}
                 renderItem={renderItem}
@@ -165,6 +159,12 @@ export default function GestionarEmpleados() {
                         <Text style={styles.emptyText}>No hay empleados registrados</Text>
                     </View>
                 }
+            />
+
+            <FloatingActionButton
+                label="+"
+                accessibilityLabel="Agregar empleado"
+                onPress={() => abrirModal()}
             />
 
             <Modal
@@ -226,20 +226,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    addButton: {
-        backgroundColor: '#3498db',
-        padding: 15,
-        borderRadius: 10,
-        alignItems: 'center',
-        marginBottom: 15,
-    },
-    addButtonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: '600',
-    },
     list: {
-        paddingBottom: 20,
+        paddingBottom: 90,
     },
     empleadoCard: {
         backgroundColor: '#fff',

@@ -3,19 +3,19 @@ import {
     View,
     Text,
     TextInput,
-    TouchableOpacity,
     StyleSheet,
     Alert,
-    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import AppButton from '../components/AppButton';
+import useAsyncAction from '../hooks/useAsyncAction';
 
-export default function Login({ navigation }) {
+export default function Login() {
     const [correo, setCorreo] = useState('');
     const [contrasena, setContrasena] = useState('');
-    const [loading, setLoading] = useState(false);
+    const { loading, run } = useAsyncAction();
     const { login } = useAuth();
 
     const handleLogin = async () => {
@@ -24,12 +24,9 @@ export default function Login({ navigation }) {
             return;
         }
 
-        setLoading(true);
-        const result = await login(correo, contrasena);
-        setLoading(false);
+        const result = await run(() => login(correo, contrasena));
 
         if (result.success) {
-            navigation.replace('Dashboard');
             return;
         }
 
@@ -65,17 +62,13 @@ export default function Login({ navigation }) {
                         secureTextEntry
                     />
 
-                    <TouchableOpacity
+                    <AppButton
+                        title="Iniciar Sesión"
                         style={styles.button}
                         onPress={handleLogin}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <Text style={styles.buttonText}>Iniciar Sesión</Text>
-                        )}
-                    </TouchableOpacity>
+                        textStyle={styles.buttonText}
+                        loading={loading}
+                    />
                 </View>
 
                 <Text style={styles.footer}>

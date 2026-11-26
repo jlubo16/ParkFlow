@@ -10,6 +10,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import api from '../services/api';
+import AppButton from '../components/AppButton';
 
 export default function RegistrarEntrada({ navigation }) {
     const [placa, setPlaca] = useState('');
@@ -148,17 +149,13 @@ export default function RegistrarEntrada({ navigation }) {
                     </View>
                 )}
 
-                <TouchableOpacity
-                    style={[styles.button, loading && styles.buttonDisabled]}
+                <AppButton
+                    title="Registrar Entrada"
+                    style={styles.button}
+                    textStyle={styles.buttonText}
                     onPress={handleRegistrar}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>Registrar Entrada</Text>
-                    )}
-                </TouchableOpacity>
+                    loading={loading}
+                />
             </View>
         </ScrollView>
     );
@@ -286,9 +283,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 10,
-    },
-    buttonDisabled: {
-        opacity: 0.7,
     },
     buttonText: {
         color: '#fff',

@@ -3,13 +3,13 @@ import {
     View,
     Text,
     TextInput,
-    TouchableOpacity,
     StyleSheet,
     Alert,
     ActivityIndicator,
     ScrollView,
 } from 'react-native';
 import api from '../services/api';
+import AppButton from '../components/AppButton';
 
 export default function ConfigurarTarifas() {
     const [tarifaCarro, setTarifaCarro] = useState('');
@@ -108,17 +108,13 @@ export default function ConfigurarTarifas() {
                     <Text style={styles.hint}>Precio por hora en pesos colombianos</Text>
                 </View>
 
-                <TouchableOpacity
-                    style={[styles.button, loading && styles.buttonDisabled]}
+                <AppButton
+                    title="💾 Guardar Cambios"
+                    style={styles.button}
+                    textStyle={styles.buttonText}
                     onPress={handleGuardar}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>💾 Guardar Cambios</Text>
-                    )}
-                </TouchableOpacity>
+                    loading={loading}
+                />
             </View>
 
             {historial.length > 0 && (
@@ -210,9 +206,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 10,
-    },
-    buttonDisabled: {
-        opacity: 0.7,
     },
     buttonText: {
         color: '#fff',

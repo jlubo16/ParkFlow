@@ -9,6 +9,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import api from '../services/api';
+import AppButton from '../components/AppButton';
 
 export default function RegistrarSalida({ navigation }) {
     const [vehiculos, setVehiculos] = useState([]);
@@ -176,17 +177,13 @@ export default function RegistrarSalida({ navigation }) {
                                 </Text>
                             </View>
 
-                            <TouchableOpacity
-                                style={[styles.button, loading && styles.buttonDisabled]}
+                            <AppButton
+                                title="Confirmar Salida"
+                                style={styles.button}
+                                textStyle={styles.buttonText}
                                 onPress={handleRegistrarSalida}
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <ActivityIndicator color="#fff" />
-                                ) : (
-                                    <Text style={styles.buttonText}>Confirmar Salida</Text>
-                                )}
-                            </TouchableOpacity>
+                                loading={loading}
+                            />
                         </View>
                     )}
                 </>
@@ -346,9 +343,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 15,
-    },
-    buttonDisabled: {
-        opacity: 0.7,
     },
     buttonText: {
         color: '#fff',
