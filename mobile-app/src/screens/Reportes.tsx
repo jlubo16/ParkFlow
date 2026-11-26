@@ -10,13 +10,17 @@ import {
 import api from '../services/api';
 import AppButton from '../components/AppButton';
 import useAsyncAction from '../hooks/useAsyncAction';
+import type { IncomeReport } from '../types';
 
 export default function Reportes() {
+    // Los estados conservan el período solicitado y el reporte recibido del servidor.
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
-    const [reporte, setReporte] = useState(null);
+    const [reporte, setReporte] = useState<IncomeReport | null>(null);
+    // El hook gestiona el indicador de carga de la generación del reporte.
     const { loading, run } = useAsyncAction();
 
+    // La función valida el rango, consulta los ingresos y conserva el resultado.
     const generarReporte = async () => {
         if (!fechaInicio || !fechaFin) {
             Alert.alert('Error', 'Selecciona un rango de fechas.');
@@ -25,7 +29,7 @@ export default function Reportes() {
 
         try {
             await run(async () => {
-                const response = await api.get(
+                const response = await api.get<IncomeReport>(
                     `/reportes/ingresos?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
                 );
                 setReporte(response.data);
@@ -35,6 +39,7 @@ export default function Reportes() {
         }
     };
 
+    // El formulario solicita fechas y presenta los resultados cuando están disponibles.
     return (
         <ScrollView style={styles.container}>
             <View style={styles.filtros}>
@@ -62,6 +67,7 @@ export default function Reportes() {
                 />
             </View>
 
+            {/* El resumen aparece después de recibir correctamente la respuesta de ingresos. */}
             {reporte && (
                 <View style={styles.resultados}>
                     <Text style={styles.resultadoTitle}>📈 Resumen de Ingresos</Text>
@@ -117,6 +123,7 @@ export default function Reportes() {
     );
 }
 
+// Los estilos agrupan los controles de fecha y las tarjetas del reporte.
 const styles = StyleSheet.create({
     container: {
         flex: 1,

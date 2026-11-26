@@ -1,13 +1,23 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
+/** Las propiedades configuran la etiqueta, posición y acciones del botón flotante. */
+interface FloatingActionButtonProps {
+    label?: string;
+    accessibilityLabel?: string;
+    position?: 'left' | 'right';
+    onPress: () => void;
+    onLongPress?: () => void;
+}
+
+/** El componente presenta una acción principal flotante, como agregar un empleado. */
 export default function FloatingActionButton({
     label = '+',
     accessibilityLabel = 'Acción principal',
     position = 'right',
     onPress,
     onLongPress,
-}) {
+}: FloatingActionButtonProps) {
     return (
         <TouchableOpacity
             accessibilityRole="button"
@@ -24,6 +34,7 @@ export default function FloatingActionButton({
     );
 }
 
+// Los estilos fijan el botón sobre el contenido y conservan su apariencia circular.
 const styles = StyleSheet.create({
     button: {
         position: 'absolute',

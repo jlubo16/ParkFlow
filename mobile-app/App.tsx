@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { AuthProvider, useAuth } from './src/contexts/AuthContext';  // <-- CAMBIADO
+import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import Login from './src/screens/Login';
 import Dashboard from './src/screens/Dashboard';
 import RegistrarEntrada from './src/screens/RegistrarEntrada';
@@ -11,13 +11,17 @@ import Reportes from './src/screens/Reportes';
 import ConfigurarTarifas from './src/screens/ConfigurarTarifas';
 import GestionarEmpleados from './src/screens/GestionarEmpleados';
 import { ActivityIndicator, View, Text } from 'react-native';
+import type { RootStackParamList } from './src/navigation/types';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
 
-function AppNavigator() {
+// El navegador muestra la pantalla de acceso o las pantallas protegidas según la sesión.
+function AppNavigator(): React.JSX.Element {
     const { user, loading } = useAuth();
 
+    // El indicador evita mostrar una ruta incorrecta mientras se restaura la sesión guardada.
     if (loading) {
+        // La condición reemplaza las rutas disponibles cuando cambia el estado de autenticación.
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <ActivityIndicator size="large" color="#3498db" />
@@ -88,7 +92,8 @@ function AppNavigator() {
     );
 }
 
-export default function App() {
+export default function App(): React.JSX.Element {
+    // El proveedor comparte la sesión y el contenedor habilita la navegación de la aplicación.
     return (
         <AuthProvider>
             <NavigationContainer>

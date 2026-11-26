@@ -8,24 +8,28 @@ import {
     ActivityIndicator,
     ScrollView,
 } from 'react-native';
-import api from '../services/api';
+import api, { getApiErrorMessage } from '../services/api';
 import AppButton from '../components/AppButton';
+import type { Tariff, TariffHistoryEntry } from '../types';
 
 export default function ConfigurarTarifas() {
+    // Los estados guardan los valores editables, las cargas y el historial de tarifas.
     const [tarifaCarro, setTarifaCarro] = useState('');
     const [tarifaMoto, setTarifaMoto] = useState('');
     const [loading, setLoading] = useState(false);
     const [cargando, setCargando] = useState(true);
-    const [historial, setHistorial] = useState([]);
+    const [historial, setHistorial] = useState<TariffHistoryEntry[]>([]);
 
+    // El efecto inicial recupera los precios actuales y sus cambios recientes.
     useEffect(() => {
         cargarTarifas();
         cargarHistorial();
     }, []);
 
+    // La función carga las tarifas vigentes y rellena los campos del formulario.
     const cargarTarifas = async () => {
         try {
-            const response = await api.get('/tarifas');
+            const response = await api.get<Tariff[]>('/tarifas');
             const carro = response.data.find(t => t.tipo_vehiculo === 'carro');
             const moto = response.data.find(t => t.tipo_vehiculo === 'moto');
             setTarifaCarro(carro?.tarifa_por_hora?.toString() || '');
@@ -37,15 +41,17 @@ export default function ConfigurarTarifas() {
         }
     };
 
+    // La función obtiene los cambios recientes para explicar cómo variaron los precios.
     const cargarHistorial = async () => {
         try {
-            const response = await api.get('/tarifas/historial');
+            const response = await api.get<TariffHistoryEntry[]>('/tarifas/historial');
             setHistorial(response.data.slice(0, 10));
         } catch (error) {
             console.error('Error al cargar historial:', error);
         }
     };
 
+    // La función valida los importes, actualiza ambos valores y refresca la vista.
     const handleGuardar = async () => {
         const carro = parseFloat(tarifaCarro);
         const moto = parseFloat(tarifaMoto);
@@ -62,13 +68,15 @@ export default function ConfigurarTarifas() {
             await cargarTarifas();
             await cargarHistorial();
         } catch (error) {
-            Alert.alert('Error', error.response?.data?.error || 'Error al actualizar tarifas.');
+            Alert.alert('Error', getApiErrorMessage(error, 'Error al actualizar tarifas.'));
         } finally {
             setLoading(false);
         }
     };
 
+    // El indicador evita mostrar campos vacíos mientras se recuperan las tarifas iniciales.
     if (cargando) {
+        // El formulario permite editar precios y consultar sus cambios anteriores.
         return (
             <View style={styles.center}>
                 <ActivityIndicator size="large" color="#3498db" />
@@ -117,6 +125,7 @@ export default function ConfigurarTarifas() {
                 />
             </View>
 
+            {/* El historial se presenta solo cuando existen cambios registrados. */}
             {historial.length > 0 && (
                 <View style={[styles.card, styles.historialCard]}>
                     <Text style={styles.historialTitle}>📜 Historial de Cambios</Text>
@@ -142,6 +151,7 @@ export default function ConfigurarTarifas() {
     );
 }
 
+// Los estilos agrupan el formulario de precios y la lista de cambios.
 const styles = StyleSheet.create({
     container: {
         flex: 1,
