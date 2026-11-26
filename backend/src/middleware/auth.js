@@ -1,14 +1,11 @@
-const jwt = require('jsonwebtoken'); // jsonwebtoken: librería para crear y verificar tokens JWT.
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
-
-// authMiddleware: verifica que el usuario esté autenticado
 
 const authMiddleware = (req, res, next) => {
     try {
         // Obtener token del header
         const token = req.headers.authorization?.split(' ')[1];
         
-        // Si no hay token, el usuario no ha iniciado sesión.
         if (!token) {
             return res.status(401).json({ error: 'No autorizado. Token no proporcionado.' });
         }

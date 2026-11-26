@@ -4,7 +4,6 @@ const db = require('../config/db');
 const getHistorial = async (req, res) => {
     try {
         const { fecha_inicio, fecha_fin, id_usuario } = req.query;
-        
         let query = `
             SELECT 
                 v.id_registro,
@@ -25,28 +24,28 @@ const getHistorial = async (req, res) => {
             LEFT JOIN transaccion_pago t ON v.id_registro = t.id_registro
             WHERE 1=1
         `;
-        
+
         const params = [];
-        
+
         if (fecha_inicio && fecha_fin) {
-            query += ` AND DATE(v.hora_entrada) BETWEEN ? AND ?`;
+            query += ` AND DATE(v.hora_entrada) BETWEEN $${params.length + 1} AND $${params.length + 2}`;
             params.push(fecha_inicio, fecha_fin);
         } else if (fecha_inicio) {
-            query += ` AND DATE(v.hora_entrada) >= ?`;
+            query += ` AND DATE(v.hora_entrada) >= $${params.length + 1}`;
             params.push(fecha_inicio);
         } else if (fecha_fin) {
-            query += ` AND DATE(v.hora_entrada) <= ?`;
+            query += ` AND DATE(v.hora_entrada) <= $${params.length + 1}`;
             params.push(fecha_fin);
         }
-        
+
         if (id_usuario) {
-            query += ` AND v.id_usuario = ?`;
+            query += ` AND v.id_usuario = $${params.length + 1}`;
             params.push(id_usuario);
         }
-        
+
         query += ` ORDER BY v.hora_entrada DESC LIMIT 200`;
-        
-        const [rows] = await db.query(query, params);
+
+        const { rows } = await db.query(query, params);
         res.json(rows);
     } catch (error) {
         console.error('Error al obtener historial:', error);
@@ -58,8 +57,8 @@ const getHistorial = async (req, res) => {
 const getHistorialVehiculo = async (req, res) => {
     try {
         const { placa } = req.params;
-        
-        const [rows] = await db.query(
+
+        const { rows } = await db.query(
             `SELECT 
                 v.*,
                 e.codigo AS espacio,
@@ -70,12 +69,11 @@ const getHistorialVehiculo = async (req, res) => {
              JOIN espacio e ON v.id_espacio = e.id_espacio
              JOIN usuario u ON v.id_usuario = u.id_usuario
              LEFT JOIN transaccion_pago t ON v.id_registro = t.id_registro
-             WHERE v.placa = ?
+             WHERE v.placa = $1
              ORDER BY v.hora_entrada DESC
              LIMIT 50`,
             [placa]
         );
-        
         res.json(rows);
     } catch (error) {
         console.error('Error al obtener historial del vehículo:', error);

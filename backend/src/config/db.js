@@ -1,33 +1,30 @@
 // backend/src/config/db.js
-const mysql = require('mysql2');
+const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = mysql.createPool({
+const pool = new Pool({
     host: process.env.DB_HOST || 'localhost',
-    port: 3307,  // <-- Puerto de XAMPP
-    user: 'root',
-    password: '',
-    database: 'smartpark',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+    port: Number(process.env.DB_PORT || 5432),
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'smartpark'
 });
 
-const promisePool = pool.promise();
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
+});
 
-// Probar conexión
-promisePool.getConnection()
-    .then(conn => {
-        console.log('Conectado a la base de datos MySQL');
-        conn.release();
+pool.query('SELECT 1')
+    .then(() => {
+        console.log('Conectado a la base de datos PostgreSQL');
     })
-    .catch(err => {
-        console.error('Error al conectar a MySQL:', err.message);
+    .catch((err) => {
+        console.error('Error al conectar a PostgreSQL:', err.message);
         console.error('Verifica:');
-        console.error('   - Puerto: 3307');
-        console.error('   - Usuario: root');
-        console.error('   - Contraseña: (vacío)');
-        console.error('   - Base de datos: smartpark');
+        console.error('   - Host:', process.env.DB_HOST || 'localhost');
+        console.error('   - Puerto:', process.env.DB_PORT || 5432);
+        console.error('   - Usuario:', process.env.DB_USER || 'postgres');
+        console.error('   - Base de datos:', process.env.DB_NAME || 'smartpark');
     });
 
-module.exports = promisePool;
+module.exports = pool;

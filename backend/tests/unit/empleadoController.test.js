@@ -12,8 +12,8 @@ const { mockRequest, mockResponse } = require('../helpers/mockExpress');
 // CP07: Crear empleado exitosamente (rol admin)
 test('CP07 - un admin puede crear un empleado nuevo', async () => {
   db.query
-    .mockResolvedValueOnce([[]])              // el correo no existe todavía
-    .mockResolvedValueOnce([{ insertId: 7 }]); // insert exitoso
+    .mockResolvedValueOnce({ rows: [] })
+    .mockResolvedValueOnce({ rows: [{ id_usuario: 7 }] });
   bcrypt.hash.mockResolvedValueOnce('hash-temporal');
 
   const req = mockRequest({
