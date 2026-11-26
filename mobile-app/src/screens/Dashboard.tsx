@@ -8,18 +8,25 @@ import {
     RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import type { StackScreenProps } from '@react-navigation/stack';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
+import type { RootStackParamList } from '../navigation/types';
+import type { ParkingSpace, ParkingSummary } from '../types';
 
-export default function Dashboard({ navigation }) {
+type Props = StackScreenProps<RootStackParamList, 'Dashboard'>;
+
+export default function Dashboard({ navigation }: Props) {
+    // La pantalla obtiene los datos de sesión y mantiene el resumen de ocupación.
     const { user, logout } = useAuth();
-    const [resumen, setResumen] = useState(null);
+    const [resumen, setResumen] = useState<ParkingSummary | null>(null);
     const [refreshing, setRefreshing] = useState(false);
-    const [espacios, setEspacios] = useState([]);
+    const [espacios, setEspacios] = useState<ParkingSpace[]>([]);
 
-    const cargarDatos = async () => {
+    // La función consulta la disponibilidad y el inventario de espacios al servidor.
+    const cargarDatos = async (): Promise<void> => {
         try {
-            const response = await api.get('/vehiculos/resumen');
+            const response = await api.get<ParkingSummary>('/vehiculos/resumen');
             setResumen(response.data);
             setEspacios(response.data.espacios || []);
         } catch (error) {
@@ -27,30 +34,37 @@ export default function Dashboard({ navigation }) {
         }
     };
 
-    // Actualizar cuando la pantalla recibe foco
+    // El efecto de navegación actualiza el resumen cada vez que la pantalla recibe foco.
     useFocusEffect(
         useCallback(() => {
             cargarDatos();
         }, [])
     );
 
-    // Cargar datos al montar el componente
+    // El efecto inicial carga los datos cuando se crea la pantalla.
     useEffect(() => {
         cargarDatos();
     }, []);
 
+    // La función gestiona el indicador de actualización manual de la lista.
     const onRefresh = async () => {
         setRefreshing(true);
-        await cargarDatos();
-        setRefreshing(false);
+        try {
+            await cargarDatos();
+        } finally {
+            setRefreshing(false);
+        }
     };
 
+    // La función cierra la sesión actual desde el contexto de autenticación.
     const handleLogout = async () => {
         await logout();
     };
 
+    // La condición limita las opciones administrativas al rol de administrador.
     const esAdmin = user?.rol === 'admin';
 
+    // El contenedor permite desplazarse y actualizar los datos con el gesto de refresco.
     return (
         <ScrollView
             style={styles.container}
@@ -58,6 +72,7 @@ export default function Dashboard({ navigation }) {
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
         >
+            {/* La cabecera identifica al usuario y ofrece la acción para salir. */}
             <View style={styles.header}>
                 <View>
                     <Text style={styles.greeting}>👋 Hola, {user?.nombre_completo}</Text>
@@ -68,6 +83,7 @@ export default function Dashboard({ navigation }) {
                 </TouchableOpacity>
             </View>
 
+            {/* El resumen aparece cuando la respuesta del servidor ya está disponible. */}
             {resumen && (
                 <View style={styles.resumenContainer}>
                     <View style={styles.resumenCard}>
@@ -85,6 +101,7 @@ export default function Dashboard({ navigation }) {
                 </View>
             )}
 
+            {/* El mapa recorre los espacios y refleja visualmente su estado actual. */}
             <View style={styles.mapContainer}>
                 <Text style={styles.sectionTitle}>🗺️ Mapa de Espacios</Text>
                 <View style={styles.grid}>
@@ -107,6 +124,7 @@ export default function Dashboard({ navigation }) {
                 </View>
             </View>
 
+            {/* Las acciones comunes y administrativas llevan a las funciones de la app. */}
             <View style={styles.actionsContainer}>
                 <Text style={styles.sectionTitle}>⚡ Acciones Rápidas</Text>
                 <View style={styles.actionsGrid}>
@@ -167,6 +185,7 @@ export default function Dashboard({ navigation }) {
     );
 }
 
+// Los estilos agrupan la presentación de tarjetas, mapa y accesos rápidos.
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -224,7 +243,7 @@ const styles = StyleSheet.create({
         borderColor: '#ecf0f1',
     },
     cardOcupado: {
-        // Sin borde derecho
+        // El estilo deja el borde derecho libre.
     },
     resumenNumero: {
         fontSize: 28,
@@ -270,13 +289,13 @@ const styles = StyleSheet.create({
         borderColor: '#ddd',
     },
     espacioDisponible: {
-        backgroundColor: '#27ae60', // Verde
+        backgroundColor: '#27ae60', // El verde identifica un espacio disponible.
     },
     espacioOcupado: {
-        backgroundColor: '#e74c3c', // Rojo
+        backgroundColor: '#e74c3c', // El rojo identifica un espacio ocupado.
     },
     espacioMantenimiento: {
-        backgroundColor: '#95a5a6', // Gris
+        backgroundColor: '#95a5a6', // El gris identifica un espacio en mantenimiento.
     },
     espacioCodigo: {
         color: '#fff',

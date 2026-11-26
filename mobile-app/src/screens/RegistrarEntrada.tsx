@@ -9,24 +9,33 @@ import {
     ScrollView,
     ActivityIndicator,
 } from 'react-native';
-import api from '../services/api';
+import type { StackScreenProps } from '@react-navigation/stack';
+import api, { getApiErrorMessage } from '../services/api';
+import AppButton from '../components/AppButton';
+import type { RootStackParamList } from '../navigation/types';
+import type { ParkingSpace, ParkingSummary, VehicleType } from '../types';
 
-export default function RegistrarEntrada({ navigation }) {
+type Props = StackScreenProps<RootStackParamList, 'RegistrarEntrada'>;
+
+export default function RegistrarEntrada({ navigation }: Props) {
+    // Los estados conservan los datos del vehículo, el espacio y el progreso del formulario.
     const [placa, setPlaca] = useState('');
-    const [tipoVehiculo, setTipoVehiculo] = useState('carro');
-    const [espacios, setEspacios] = useState([]);
-    const [espacioSeleccionado, setEspacioSeleccionado] = useState(null);
+    const [tipoVehiculo, setTipoVehiculo] = useState<VehicleType>('carro');
+    const [espacios, setEspacios] = useState<ParkingSpace[]>([]);
+    const [espacioSeleccionado, setEspacioSeleccionado] = useState<ParkingSpace | null>(null);
     const [loading, setLoading] = useState(false);
     const [cargandoEspacios, setCargandoEspacios] = useState(true);
 
+    // El efecto vuelve a consultar los espacios cuando cambia la categoría del vehículo.
     useEffect(() => {
         cargarEspacios();
     }, [tipoVehiculo]);
 
+    // La función obtiene espacios y conserva solo los disponibles para el tipo elegido.
     const cargarEspacios = async () => {
         setCargandoEspacios(true);
         try {
-            const response = await api.get('/vehiculos/resumen');
+            const response = await api.get<ParkingSummary>('/vehiculos/resumen');
             const espaciosFiltrados = response.data.espacios.filter(
                 e => e.tipo_vehiculo === tipoVehiculo && e.estado === 'disponible'
             );
@@ -38,6 +47,7 @@ export default function RegistrarEntrada({ navigation }) {
         }
     };
 
+    // La función valida el formulario y envía la entrada del vehículo a la API.
     const handleRegistrar = async () => {
         if (!placa || placa.length < 3) {
             Alert.alert('Error', 'Ingresa una placa válida (mínimo 3 caracteres).');
@@ -63,18 +73,20 @@ export default function RegistrarEntrada({ navigation }) {
                 [{ text: 'OK', onPress: () => navigation.goBack() }]
             );
         } catch (error) {
-            Alert.alert('Error', error.response?.data?.error || 'Error al registrar entrada.');
+            Alert.alert('Error', getApiErrorMessage(error, 'Error al registrar entrada.'));
         } finally {
             setLoading(false);
         }
     };
 
+    // El formulario permite seleccionar el vehículo, asignar un espacio y confirmar la entrada.
     return (
         <ScrollView style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.title}>📥 Registrar Entrada</Text>
             </View>
 
+            {/* El selector determina qué espacios compatibles debe cargar la pantalla. */}
             <View style={styles.form}>
                 <Text style={styles.label}>Tipo de Vehículo</Text>
                 <View style={styles.tipoContainer}>
@@ -111,6 +123,7 @@ export default function RegistrarEntrada({ navigation }) {
                     maxLength={10}
                 />
 
+                {/* La lista muestra el progreso, el estado vacío o los espacios seleccionables. */}
                 <Text style={styles.label}>Selecciona un Espacio</Text>
                 {cargandoEspacios ? (
                     <ActivityIndicator size="large" color="#3498db" />
@@ -140,6 +153,7 @@ export default function RegistrarEntrada({ navigation }) {
                     </View>
                 )}
 
+                {/* El resumen aparece únicamente cuando ya se eligió un espacio. */}
                 {espacioSeleccionado && (
                     <View style={styles.selectedInfo}>
                         <Text style={styles.selectedText}>
@@ -148,22 +162,19 @@ export default function RegistrarEntrada({ navigation }) {
                     </View>
                 )}
 
-                <TouchableOpacity
-                    style={[styles.button, loading && styles.buttonDisabled]}
+                <AppButton
+                    title="Registrar Entrada"
+                    style={styles.button}
+                    textStyle={styles.buttonText}
                     onPress={handleRegistrar}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>Registrar Entrada</Text>
-                    )}
-                </TouchableOpacity>
+                    loading={loading}
+                />
             </View>
         </ScrollView>
     );
 }
 
+// Los estilos distinguen controles, espacios disponibles y la selección actual.
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -286,9 +297,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 10,
-    },
-    buttonDisabled: {
-        opacity: 0.7,
     },
     buttonText: {
         color: '#fff',

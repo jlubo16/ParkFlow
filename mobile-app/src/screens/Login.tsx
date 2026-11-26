@@ -3,39 +3,40 @@ import {
     View,
     Text,
     TextInput,
-    TouchableOpacity,
     StyleSheet,
     Alert,
-    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import AppButton from '../components/AppButton';
+import useAsyncAction from '../hooks/useAsyncAction';
 
-export default function Login({ navigation }) {
+export default function Login(): React.JSX.Element {
+    // Los estados conservan lo que la persona escribe en los campos del formulario.
     const [correo, setCorreo] = useState('');
     const [contrasena, setContrasena] = useState('');
-    const [loading, setLoading] = useState(false);
+    // El hook comparte el estado de carga del botón durante la autenticación.
+    const { loading, run } = useAsyncAction();
     const { login } = useAuth();
 
-    const handleLogin = async () => {
+    // La función valida los campos y solicita al contexto que autentique al usuario.
+    const handleLogin = async (): Promise<void> => {
         if (!correo || !contrasena) {
             Alert.alert('Error', 'Por favor ingresa correo y contraseña.');
             return;
         }
 
-        setLoading(true);
-        const result = await login(correo, contrasena);
-        setLoading(false);
+        const result = await run(() => login(correo, contrasena));
 
         if (result.success) {
-            navigation.replace('Dashboard');
             return;
         }
 
         Alert.alert('Error', result.error);
     };
 
+    // El formulario adapta su posición cuando aparece el teclado del dispositivo.
     return (
         <KeyboardAvoidingView
             style={styles.container}
@@ -45,6 +46,7 @@ export default function Login({ navigation }) {
                 <Text style={styles.title}>🅿️ SmartPark</Text>
                 <Text style={styles.subtitle}>Sistema de Gestión de Parqueaderos</Text>
 
+                {/* El formulario recoge el correo y la contraseña de acceso. */}
                 <View style={styles.form}>
                     <TextInput
                         style={styles.input}
@@ -65,17 +67,13 @@ export default function Login({ navigation }) {
                         secureTextEntry
                     />
 
-                    <TouchableOpacity
+                    <AppButton
+                        title="Iniciar Sesión"
                         style={styles.button}
                         onPress={handleLogin}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <Text style={styles.buttonText}>Iniciar Sesión</Text>
-                        )}
-                    </TouchableOpacity>
+                        textStyle={styles.buttonText}
+                        loading={loading}
+                    />
                 </View>
 
                 <Text style={styles.footer}>
@@ -86,6 +84,7 @@ export default function Login({ navigation }) {
     );
 }
 
+// Los estilos organizan el formulario de acceso para pantallas móviles.
 const styles = StyleSheet.create({
     container: {
         flex: 1,

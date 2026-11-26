@@ -10,40 +10,47 @@ import {
     Alert,
 } from 'react-native';
 import api from '../services/api';
+import type { HistoryEntry } from '../types';
 
 export default function Historial() {
-    const [historial, setHistorial] = useState([]);
+    // Los estados guardan los registros consultados, el refresco y el rango de fechas.
+    const [historial, setHistorial] = useState<HistoryEntry[]>([]);
     const [refreshing, setRefreshing] = useState(false);
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
 
+    // La función consulta todos los registros o aplica el rango de fechas indicado.
     const cargarHistorial = async () => {
         try {
             let url = '/historial';
             if (fechaInicio && fechaFin) {
                 url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
             }
-            const response = await api.get(url);
+            const response = await api.get<HistoryEntry[]>(url);
             setHistorial(response.data);
         } catch (error) {
             Alert.alert('Error', 'No se pudo cargar el historial.');
         }
     };
 
+    // El efecto carga el historial inicial al montar la pantalla.
     useEffect(() => {
         cargarHistorial();
     }, []);
 
+    // La función actualiza el indicador mientras vuelve a solicitar los registros.
     const onRefresh = async () => {
         setRefreshing(true);
         await cargarHistorial();
         setRefreshing(false);
     };
 
+    // La acción aplica los valores de fecha que se encuentran en los campos del filtro.
     const filtrar = () => {
         cargarHistorial();
     };
 
+    // La pantalla muestra filtros y el resultado en una lista desplazable.
     return (
         <ScrollView
             style={styles.container}
@@ -71,6 +78,7 @@ export default function Historial() {
                 </TouchableOpacity>
             </View>
 
+            {/* La condición muestra un aviso cuando la consulta no devuelve registros. */}
             {historial.length === 0 ? (
                 <View style={styles.emptyContainer}>
                     <Text style={styles.emptyEmoji}>📋</Text>
@@ -116,6 +124,7 @@ export default function Historial() {
     );
 }
 
+// Los estilos separan visualmente los filtros y las tarjetas de cada registro.
 const styles = StyleSheet.create({
     container: {
         flex: 1,

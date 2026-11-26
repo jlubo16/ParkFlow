@@ -9,20 +9,25 @@ import {
     Alert,
     ActivityIndicator,
     Modal,
+    type ListRenderItem,
 } from 'react-native';
-import api from '../services/api';
+import api, { getApiErrorMessage } from '../services/api';
+import FloatingActionButton from '../components/FloatingActionButton';
+import type { Employee } from '../types';
 
 export default function GestionarEmpleados() {
-    const [empleados, setEmpleados] = useState([]);
+    // Los estados mantienen empleados, campos del modal y operación activa.
+    const [empleados, setEmpleados] = useState<Employee[]>([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [nombre, setNombre] = useState('');
     const [correo, setCorreo] = useState('');
-    const [editando, setEditando] = useState(null);
+    const [editando, setEditando] = useState<Employee | null>(null);
 
+    // La función consulta los empleados y finaliza el indicador al recibir la respuesta.
     const cargarEmpleados = async () => {
         try {
-            const response = await api.get('/empleados');
+            const response = await api.get<Employee[]>('/empleados');
             setEmpleados(response.data);
         } catch (error) {
             Alert.alert('Error', 'No se pudieron cargar los empleados.');
@@ -31,10 +36,12 @@ export default function GestionarEmpleados() {
         }
     };
 
+    // El efecto obtiene la lista inicial al montar la pantalla.
     useEffect(() => {
         cargarEmpleados();
     }, []);
 
+    // La función crea o actualiza el empleado según exista un registro en edición.
     const handleGuardar = async () => {
         if (!nombre || !correo) {
             Alert.alert('Error', 'Todos los campos son requeridos.');
@@ -57,13 +64,14 @@ export default function GestionarEmpleados() {
             cerrarModal();
             await cargarEmpleados();
         } catch (error) {
-            Alert.alert('Error', error.response?.data?.error || 'Error al guardar.');
+            Alert.alert('Error', getApiErrorMessage(error, 'Error al guardar.'));
         } finally {
             setLoading(false);
         }
     };
 
-    const handleEliminar = async (id) => {
+    // La función solicita confirmación antes de desactivar al empleado en el servidor.
+    const handleEliminar = async (id: number): Promise<void> => {
         Alert.alert(
             'Confirmar',
             '¿Estás seguro de desactivar este empleado?',
@@ -86,7 +94,8 @@ export default function GestionarEmpleados() {
         );
     };
 
-    const abrirModal = (empleado = null) => {
+    // La función prepara el modal con los datos existentes o con campos vacíos.
+    const abrirModal = (empleado: Employee | null = null): void => {
         if (empleado) {
             setEditando(empleado);
             setNombre(empleado.nombre_completo);
@@ -99,14 +108,16 @@ export default function GestionarEmpleados() {
         setModalVisible(true);
     };
 
-    const cerrarModal = () => {
+    // La función cierra el modal y limpia los valores usados en el formulario.
+    const cerrarModal = (): void => {
         setModalVisible(false);
         setEditando(null);
         setNombre('');
         setCorreo('');
     };
 
-    const renderItem = ({ item }) => (
+    // El renderizador presenta la información y las acciones para cada empleado.
+    const renderItem: ListRenderItem<Employee> = ({ item }) => (
         <View style={styles.empleadoCard}>
             <View style={styles.empleadoInfo}>
                 <Text style={styles.empleadoNombre}>{item.nombre_completo}</Text>
@@ -137,7 +148,9 @@ export default function GestionarEmpleados() {
         </View>
     );
 
+    // El indicador aparece durante la primera consulta, antes de tener filas para mostrar.
     if (loading && empleados.length === 0) {
+        // La lista ocupa la pantalla y comparte espacio con el botón flotante y el modal.
         return (
             <View style={styles.center}>
                 <ActivityIndicator size="large" color="#3498db" />
@@ -147,13 +160,7 @@ export default function GestionarEmpleados() {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => abrirModal()}
-            >
-                <Text style={styles.addButtonText}>➕ Agregar Empleado</Text>
-            </TouchableOpacity>
-
+            {/* FlatList renderiza eficientemente la lista y ofrece un mensaje si está vacía. */}
             <FlatList
                 data={empleados}
                 renderItem={renderItem}
@@ -167,6 +174,14 @@ export default function GestionarEmpleados() {
                 }
             />
 
+            {/* El FAB abre el formulario para crear un empleado. */}
+            <FloatingActionButton
+                label="+"
+                accessibilityLabel="Agregar empleado"
+                onPress={() => abrirModal()}
+            />
+
+            {/* El modal reutiliza el formulario tanto para crear como para editar. */}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -215,6 +230,7 @@ export default function GestionarEmpleados() {
     );
 }
 
+// Los estilos distinguen la lista, las acciones por empleado y el formulario modal.
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -226,20 +242,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    addButton: {
-        backgroundColor: '#3498db',
-        padding: 15,
-        borderRadius: 10,
-        alignItems: 'center',
-        marginBottom: 15,
-    },
-    addButtonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: '600',
-    },
     list: {
-        paddingBottom: 20,
+        paddingBottom: 90,
     },
     empleadoCard: {
         backgroundColor: '#fff',

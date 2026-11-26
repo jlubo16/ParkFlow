@@ -9,24 +9,34 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import api from '../services/api';
+import AppButton from '../components/AppButton';
+import { getApiErrorMessage } from '../services/api';
+import type { StackScreenProps } from '@react-navigation/stack';
+import type { RootStackParamList } from '../navigation/types';
+import type { ExitDetails, ParkedVehicle, Tariff } from '../types';
 
-export default function RegistrarSalida({ navigation }) {
-    const [vehiculos, setVehiculos] = useState([]);
-    const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
-    const [detalle, setDetalle] = useState(null);
+type Props = StackScreenProps<RootStackParamList, 'RegistrarSalida'>;
+
+export default function RegistrarSalida({ navigation }: Props) {
+    // Los estados conservan vehículos activos, tarifas, selección y datos calculados de salida.
+    const [vehiculos, setVehiculos] = useState<ParkedVehicle[]>([]);
+    const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState<ParkedVehicle | null>(null);
+    const [detalle, setDetalle] = useState<ExitDetails | null>(null);
     const [loading, setLoading] = useState(false);
     const [cargando, setCargando] = useState(true);
-    const [tarifas, setTarifas] = useState([]);
+    const [tarifas, setTarifas] = useState<Tariff[]>([]);
 
+    // El efecto carga los vehículos y las tarifas cuando se abre la pantalla.
     useEffect(() => {
         cargarVehiculos();
         cargarTarifas();
     }, []);
 
+    // La función obtiene los vehículos que todavía permanecen en el parqueadero.
     const cargarVehiculos = async () => {
         setCargando(true);
         try {
-            const response = await api.get('/vehiculos/estacionados');
+            const response = await api.get<ParkedVehicle[]>('/vehiculos/estacionados');
             setVehiculos(response.data);
         } catch (error) {
             Alert.alert('Error', 'No se pudieron cargar los vehículos.');
@@ -35,25 +45,27 @@ export default function RegistrarSalida({ navigation }) {
         }
     };
 
+    // La función recupera las tarifas vigentes que se usan para estimar el cobro.
     const cargarTarifas = async () => {
         try {
-            const response = await api.get('/tarifas');
+            const response = await api.get<Tariff[]>('/tarifas');
             setTarifas(response.data);
         } catch (error) {
             console.error('Error al cargar tarifas:', error);
         }
     };
 
-    const seleccionarVehiculo = (vehiculo) => {
+    // La función calcula el tiempo y el valor estimado para el vehículo seleccionado.
+    const seleccionarVehiculo = (vehiculo: ParkedVehicle): void => {
         setVehiculoSeleccionado(vehiculo);
         
         const tarifa = tarifas.find(t => t.tipo_vehiculo === vehiculo.tipo_vehiculo);
-        const tarifaPorHora = tarifa ? parseFloat(tarifa.tarifa_por_hora) : 5000;
+        const tarifaPorHora = tarifa ? Number(tarifa.tarifa_por_hora) : 5000;
         
-        // Calcular tiempo
+        // El cálculo redondea minutos y horas hacia arriba, igual que la lógica del servidor.
         const ahora = new Date();
         const entrada = new Date(vehiculo.hora_entrada);
-        const minutos = Math.ceil((ahora - entrada) / (1000 * 60));
+        const minutos = Math.ceil((ahora.getTime() - entrada.getTime()) / (1000 * 60));
         const horas = Math.ceil(minutos / 60);
         const total = horas * tarifaPorHora;
 
@@ -66,6 +78,7 @@ export default function RegistrarSalida({ navigation }) {
         });
     };
 
+    // La función confirma la salida y muestra el valor final devuelto por el servidor.
     const handleRegistrarSalida = async () => {
         if (!vehiculoSeleccionado) {
             Alert.alert('Error', 'Selecciona un vehículo.');
@@ -84,13 +97,15 @@ export default function RegistrarSalida({ navigation }) {
                 [{ text: 'OK', onPress: () => navigation.goBack() }]
             );
         } catch (error) {
-            Alert.alert('Error', error.response?.data?.error || 'Error al registrar salida.');
+            Alert.alert('Error', getApiErrorMessage(error, 'Error al registrar salida.'));
         } finally {
             setLoading(false);
         }
     };
 
+    // La pantalla muestra un indicador hasta completar la carga inicial de vehículos.
     if (cargando) {
+        // La lista permite elegir un vehículo y revisar el cobro antes de confirmar su salida.
         return (
             <View style={styles.center}>
                 <ActivityIndicator size="large" color="#3498db" />
@@ -105,6 +120,7 @@ export default function RegistrarSalida({ navigation }) {
                 <Text style={styles.title}>📤 Registrar Salida</Text>
             </View>
 
+            {/* La condición separa el estado vacío de la lista de vehículos estacionados. */}
             {vehiculos.length === 0 ? (
                 <View style={styles.emptyContainer}>
                     <Text style={styles.emptyEmoji}>🚗</Text>
@@ -140,6 +156,7 @@ export default function RegistrarSalida({ navigation }) {
                         ))}
                     </View>
 
+                    {/* El detalle y la confirmación aparecen después de elegir un vehículo. */}
                     {detalle && (
                         <View style={styles.detalleContainer}>
                             <Text style={styles.detalleTitle}>🧾 Detalle de Salida</Text>
@@ -176,17 +193,13 @@ export default function RegistrarSalida({ navigation }) {
                                 </Text>
                             </View>
 
-                            <TouchableOpacity
-                                style={[styles.button, loading && styles.buttonDisabled]}
+                            <AppButton
+                                title="Confirmar Salida"
+                                style={styles.button}
+                                textStyle={styles.buttonText}
                                 onPress={handleRegistrarSalida}
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <ActivityIndicator color="#fff" />
-                                ) : (
-                                    <Text style={styles.buttonText}>Confirmar Salida</Text>
-                                )}
-                            </TouchableOpacity>
+                                loading={loading}
+                            />
                         </View>
                     )}
                 </>
@@ -195,6 +208,7 @@ export default function RegistrarSalida({ navigation }) {
     );
 }
 
+// Los estilos diferencian estados vacíos, tarjetas de vehículos y resumen del cobro.
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -346,9 +360,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 15,
-    },
-    buttonDisabled: {
-        opacity: 0.7,
     },
     buttonText: {
         color: '#fff',
