@@ -62,10 +62,10 @@ CREATE TABLE transaccion_pago (
 );
 
 INSERT INTO usuario (nombre_completo, correo, contrasena, rol) VALUES
-('Administrador', 'admin@smartpark.com', '$2b$10$UQqK0.NY8H0LknDKaJdJgegBrE5MErdQ/5HmD0FIsykK.gk3QEHKO', 'admin');
+('Administrador', 'admin@smartpark.com', '$2b$10$mJx.1KUarpI5BkeqNnz9JOMvDyXtDy7EKob1cDnVZGt8fPxGCepUi', 'admin');
 
 INSERT INTO usuario (nombre_completo, correo, contrasena, rol) VALUES
-('Empleado 1', 'empleado@smartpark.com', '$2b$10$XzY9w8v7u6t5s4r3q2p1o0n9m8l7k6j5h4g3f2d1s0a9p8o7i6u5y4t3r2', 'empleado');
+('Empleado 1', 'empleado@smartpark.com', '$2b$10$2WbW9nGnVorAtUFtTgaSEOJFi.B0vefiGxdLd2wvC990DD6gko9Fu', 'empleado');
 
 INSERT INTO espacio (codigo, tipo_vehiculo) VALUES
 ('A1', 'carro'), ('A2', 'carro'), ('A3', 'carro'),
